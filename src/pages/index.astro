@@ -2,47 +2,51 @@
 import Layout from "@/layouts/Layout.astro"
 
 import AboutMe from "@/components/AboutMe.astro"
-import Briefcase from "@/components/icons/Briefcase.astro"
-import CodeIcon from "@/components/icons/Code.astro"
-import Experience from "@/components/Experience.astro"
+import AreasAplicacion from "@/components/AreasAplicacion.astro"
+import CasoReal from "@/components/CasoReal.astro"
+import PasosImplementacion from "@/components/PasosImplementacion.astro"
 import ProfileCheck from "@/components/icons/ProfileCheck.astro"
-import Projects from "@/components/Projects.astro"
 import SectionContainer from "@/components/SectionContainer.astro"
 import Hero from "@/components/Hero.astro"
+import TendenciaTecnologica from "@/components/TendenciaTecnologica.astro"
 import TitleSection from "@/components/TitleSection.astro"
 ---
 
 <Layout
-  title="Porfolio de midudev - Desarrollador y Programador Web con 15 años de experiencia"
-  description="Contrata a midudev para crear tu aplicación web o móvil. Desarrollador Web y Creador de Contenido. Especializado en crear aplicaciones únicas."
+  title="Ciberseguridad - Tecnología Emergente para la Protección Digital"
+  description="Explora la ciberseguridad como tecnología emergente: qué es, cómo implementarla, áreas de aplicación y casos reales de éxito en la protección digital."
 >
   <main class="px-4">
     <SectionContainer class="py-16 md:py-36">
-      <Hero>
-      </slot>
-    </Hero>
+      <Hero />
     </SectionContainer>
     <div class="space-y-24">
-    <SectionContainer id="experiencia">
-      <TitleSection>
-        <Briefcase class="size-8" />
-        Experiencia laboral
-      </TitleSection>
-      <Experience />
+    
+    <!-- Sección 1: ¿En qué consiste la tendencia tecnológica? -->
+    <SectionContainer id="tendencia">
+      <TendenciaTecnologica />
     </SectionContainer>
 
-    <SectionContainer id="proyectos">
-      <TitleSection>
-        <CodeIcon class="size-7" />
-        Proyectos
-      </TitleSection>
-      <Projects />
+    <!-- Sección 2: Pasos a seguir para usarla -->
+    <SectionContainer id="pasos">
+      <PasosImplementacion />
     </SectionContainer>
 
+    <!-- Sección 3: Áreas de aplicación -->
+    <SectionContainer id="aplicaciones">
+      <AreasAplicacion />
+    </SectionContainer>
+
+    <!-- Sección 4: Caso real -->
+    <SectionContainer id="caso-real">
+      <CasoReal />
+    </SectionContainer>
+
+    <!-- Sección adicional: Sobre el autor -->
     <SectionContainer id="sobre-mi">
       <TitleSection>
         <ProfileCheck class="size-8" />
-        Sobre mí
+        Sobre el Autor
       </TitleSection>
       <AboutMe />
     </SectionContainer>
