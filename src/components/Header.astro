@@ -53,43 +53,125 @@ const navItems = [
 
 <script>
   document.addEventListener("astro:page-load", () => {
-    const sections = document.querySelectorAll("section")
+    const sections = document.querySelectorAll("section[id]")
     const navItems = document.querySelectorAll("header nav a")
 
-    const callback = (entries: any[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          navItems.forEach((item) => {
-            if (item.getAttribute("aria-label") == entry.target.id) {
-              item.classList.add("text-blue-500")
-            } else {
-              item.classList.remove("text-blue-500")
-            }
-          })
+    // Función para actualizar el estado activo de la navegación
+    const updateActiveNav = (activeSectionId: string) => {
+      navItems.forEach((item) => {
+        const itemLabel = item.getAttribute("aria-label")
+        if (itemLabel === activeSectionId) {
+          item.classList.add("text-blue-500", "dark:text-blue-400")
+          item.classList.remove("text-gray-600", "dark:text-gray-200")
+        } else {
+          item.classList.remove("text-blue-500", "dark:text-blue-400")
+          item.classList.add("text-gray-600", "dark:text-gray-200")
         }
       })
     }
 
+    // Función para encontrar la sección más visible
+    const findActiveSection = (): Element | null => {
+      let activeSection: Element | null = null
+      let bestScore = -1
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect()
+        const viewportHeight = window.innerHeight
+        const viewportCenter = viewportHeight / 2
+        
+        // Calcular diferentes métricas de visibilidad
+        const sectionTop = rect.top
+        const sectionBottom = rect.bottom
+        const sectionHeight = rect.height
+        
+        // 1. ¿Está la sección visible en el viewport?
+        const isVisible = sectionBottom > 0 && sectionTop < viewportHeight
+        
+        if (!isVisible) return
+        
+        // 2. Calcular qué porcentaje de la sección está visible
+        const visibleTop = Math.max(0, sectionTop)
+        const visibleBottom = Math.min(viewportHeight, sectionBottom)
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+        const visibilityRatio = visibleHeight / sectionHeight
+        
+        // 3. Calcular qué tan cerca está el centro de la sección del centro del viewport
+        const sectionCenter = sectionTop + (sectionHeight / 2)
+        const distanceFromCenter = Math.abs(sectionCenter - viewportCenter)
+        const centerScore = Math.max(0, 1 - (distanceFromCenter / viewportHeight))
+        
+        // 4. Calcular si la sección está en la parte superior del viewport (más importante)
+        const topPosition = Math.max(0, -sectionTop)
+        const topScore = Math.min(1, topPosition / viewportHeight)
+        
+        // 5. Score combinado: priorizar secciones que están cerca del centro y son bien visibles
+        const combinedScore = (visibilityRatio * 0.3) + (centerScore * 0.3) + (topScore * 0.4)
+        
+        // Solo considerar secciones que están al menos 10% visibles (más permisivo para secciones largas)
+        if (visibilityRatio > 0.1 && combinedScore > bestScore) {
+          bestScore = combinedScore
+          activeSection = section
+        }
+      })
+
+      return activeSection
+    }
+
+    // Callback para el IntersectionObserver
+    const callback = (entries: any[]) => {
+      const activeSection = findActiveSection()
+      if (activeSection && activeSection.id) {
+        updateActiveNav(activeSection.id)
+      }
+    }
+
+    // Configurar el IntersectionObserver con múltiples thresholds
     const observer = new IntersectionObserver(callback, {
       root: null,
-      rootMargin: "0px",
-      threshold: 0.3,
+      rootMargin: "-10% 0px -10% 0px", // Margen menos restrictivo
+      threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
     })
 
+    // Observar todas las secciones
     sections.forEach((section) => {
       observer.observe(section)
     })
+
+    // También actualizar al hacer scroll para mejor responsividad
+    let scrollTimeout: number
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        const activeSection = findActiveSection()
+        if (activeSection && activeSection.id) {
+          updateActiveNav(activeSection.id)
+        }
+      }, 50)
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
 
     // Cleanup function
     document.onvisibilitychange = () => {
       if (document.visibilityState === "hidden") {
         observer.disconnect()
+        window.removeEventListener("scroll", handleScroll)
       } else {
         sections.forEach((section) => {
           observer.observe(section)
         })
+        window.addEventListener("scroll", handleScroll, { passive: true })
       }
     }
+
+    // Inicializar con la primera sección visible
+    setTimeout(() => {
+      const activeSection = findActiveSection()
+      if (activeSection && activeSection.id) {
+        updateActiveNav(activeSection.id)
+      }
+    }, 100)
   })
 </script>
 
@@ -113,3 +195,4 @@ const navItems = [
     }
   }
 </style>
+
